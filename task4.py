@@ -13,23 +13,17 @@ Full Join: Combines the results of both left and right outer joins.
 import pandas as pd
 
 flights = pd.read_csv("candidateEvalData/flights.csv")
-airports = pd.read_csv("candidateEvalData/airports.csv")
-weather = pd.read_csv("candidateEvalData/weather.csv")
 airlines = pd.read_csv("candidateEvalData/airlines.csv")
 
-airlines = airlines[airlines['carrier'] != 'nan']
-flights = flights[flights['carrier'] != 'nan']
-flights['carrier'] = flights['carrier'].astype('string')
-airlines['carrier'] = airlines['carrier'].astype('string')
-
 # Add full airline name to the flights dataframe and show the arr_time, origin, dest and the name of the airline.
-result_df = flights.join(airlines, lsuffix='_flight', rsuffix='_airline')[['arr_time', 'origin', 'dest', 'name']]
+result_df = flights.merge(airlines, on='carrier')[['arr_time', 'origin', 'dest', 'name']]
 
 # Filter resulting data.frame to include only flights containing the word JetBlue
-jetBlue_df = result_df[result_df.name.str.contains('JetBlue', na=False)]
+jet_blue_df = result_df[result_df.name.str.contains('JetBlue', na=False)]
 
 # Summarise the total number of flights by origin in ascending.
-flight_count_by_origin = result_df.groupby('origin').size().sort_values(ascending=True)
+flight_count_by_origin_series = jet_blue_df.groupby('origin').size().sort_values(ascending=True)
+flights_count_df = pd.DataFrame({'numFlights': flight_count_by_origin_series}).reset_index()
 
 # Filter resulting data.frame to return only origins with more than 100
-result_df.groupby('origin').filter(lambda x: len(x) > 100)
+filtered_flights_count_df = flights_count_df[flights_count_df['numFlights'] > 100]
