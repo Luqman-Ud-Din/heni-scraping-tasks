@@ -2,3 +2,4 @@ pandas==1.5.2
 lxml==4.9.2
 Scrapy==2.7.1
 requests==2.28.2
+pandasql==0.7.3
