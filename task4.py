@@ -11,19 +11,18 @@ Full Join: Combines the results of both left and right outer joins.
 
 # Part 2
 import pandas as pd
+from pandasql import sqldf
 
 flights = pd.read_csv("candidateEvalData/flights.csv")
 airlines = pd.read_csv("candidateEvalData/airlines.csv")
 
-# Add full airline name to the flights dataframe and show the arr_time, origin, dest and the name of the airline.
-result_df = flights.merge(airlines, on='carrier')[['arr_time', 'origin', 'dest', 'name']]
-
-# Filter resulting data.frame to include only flights containing the word JetBlue
-jet_blue_df = result_df[result_df.name.str.contains('JetBlue', na=False)]
-
-# Summarise the total number of flights by origin in ascending.
-flight_count_by_origin_series = jet_blue_df.groupby('origin').size().sort_values(ascending=True)
-flights_count_df = pd.DataFrame({'numFlights': flight_count_by_origin_series}).reset_index()
-
-# Filter resulting data.frame to return only origins with more than 100
-filtered_flights_count_df = flights_count_df[flights_count_df['numFlights'] > 100]
+flights_count_df = sqldf(
+    """
+    SELECT origin, COUNT(*) AS numFlights 
+    FROM flights INNER JOIN airlines ON flights.carrier = airlines.carrier 
+    WHERE name LIKE '%JetBlue%' 
+    GROUP BY origin 
+    HAVING numFlights > 100 
+    ORDER BY numFlights
+    """
+)
